@@ -55,60 +55,75 @@ def normalVector(v1, v2, v3):
 
 if __name__ == '__main__':
 	name = input('Enter input file (.obj):')
-	#TODO Check file type
+	# TODO Check file type
 	file = open(name, 'r')
 	vertices = []
 	vectors = []
 	textures = []
 	faceVertices = []
 	faceVectors = []
+	extraVectors = []
 	faceTextures = []
-	normalVectorsOffset = 0
 	for line in file:
 		vertex = vertexCRE.search(line)
 		if vertex:
 			x = float(vertex.group('x'))
 			y = float(vertex.group('y'))
 			z = float(vertex.group('z'))
+			#DEBUG print(f'[vertex] x:{x} y:{y} z:{z}')
 			vertices.append([x,y,z])
-			print(f'[vertex] x:{x} y:{y} z:{z}')
 		else:
 			vector = vectorCRE.search(line)
 		if vector:
 			i = float(vector.group('i'))
 			j = float(vector.group('j'))
 			k = float(vector.group('k'))
+			#DEBUG print(f'[vector] i:{i} j:{j} k:{k}')
 			vectors.append([i,j,k])
-			print(f'[vector] i:{i} j:{j} k:{k}')
 		else:
 			texture = textureCRE.search(line)
 		if texture:
 			u = float(texture.group('u'))
 			v = float(texture.group('v'))
+			#DEBUG print(f'[texture vector] u:{u} v:{v}')
 			textures.append([u,v])
-			print(f'[texture vector] u:{u} v:{v}')
 		else:
 			face = faceCRE.search(line)
 		if face:
-			v1 = tripletCRE.fullmatch(face[1])
-			v2 = tripletCRE.fullmatch(face[2])
-			v3 = tripletCRE.fullmatch(face[3])
-			vv1 = int(v1[1])-1
-			vv2 = int(v2[1])-1
-			vv3 = int(v3[1])-1
-			faceVertices.append(vv1)
-			faceVertices.append(vv2)
-			faceVertices.append(vv3)
-			faceTextures.append(int(v1[2])-1+normalVectorsOffset)
-			faceTextures.append(int(v2[2])-1+normalVectorsOffset)
-			faceTextures.append(int(v3[2])-1+normalVectorsOffset)
-			faceVectors.append(len(vectors))
-			faceVectors.append(len(vectors))
-			faceVectors.append(len(vectors))
-			normalVectorsOffset += 1
-			vectors.append(normalVector(vertices[vv1], vertices[vv2], vertices[vv3]))
-			print('[face] %s' %(face.group(0)))
+			triplet1 = tripletCRE.fullmatch(face[1])
+			triplet2 = tripletCRE.fullmatch(face[2])
+			triplet3 = tripletCRE.fullmatch(face[3])
+			#DEBUG print('[face] %s' %(face.group(0)))
+			v1 = int(triplet1[1])-1
+			v2 = int(triplet2[1])-1
+			v3 = int(triplet3[1])-1
+			faceVertices.append(v1)
+			faceVertices.append(v2)
+			faceVertices.append(v3)
+			if triplet1[2]:
+				# TODO check triplet2[2] and triplet3[2]
+				faceTextures.append(int(triplet1[2])-1)
+				faceTextures.append(int(triplet2[2])-1)
+				faceTextures.append(int(triplet3[2])-1)
+			if triplet1[3]:
+				# TODO check triplet2[2] and triplet3[2]
+				faceVectors.append(int(triplet1[3])-1)
+				faceVectors.append(int(triplet2[3])-1)
+				faceVectors.append(int(triplet3[3])-1)
+			else:
+				extraVectors.append(normalVector(vertices[v1], vertices[v2], vertices[v3]))
+				faceVectors.append(-len(extraVectors))
+				faceVectors.append(-len(extraVectors))
+				faceVectors.append(-len(extraVectors))
+
+	for i in range(len(faceVectors)):
+		if faceVectors[i] < 0:
+			faceVectors[i] = len(vectors)-1-faceVectors[i]
 	
-	visualizer.mostrar(vertices, textures, vectors, faceVertices, faceTextures, faceVectors)
+	for id in faceVectors:
+		if id < 0:
+			print(id)
+	
+	visualizer.mostrar(vertices, textures, vectors+extraVectors, faceVertices, faceTextures, faceVectors)
 
 

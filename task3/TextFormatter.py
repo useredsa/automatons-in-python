@@ -3,7 +3,11 @@ import regex as re
 import sys
 
 class TextFormatter(object):
-    #TODO add description
+    '''Helps adjust spanish text to line length adding hyphens.
+
+    This is the main class of the task. It uses regular expressions
+    and a set of simplified grammatical rules to split words.
+    '''
 
     
     # Regular expressions for what is is considered a vowel and what
@@ -15,8 +19,8 @@ class TextFormatter(object):
     
     # An attack group is a group of consonants that can start a syllable.
     # A coda group is a group of consonants that can end a syllable.
-    attackGroup = r'(?:[pcbgf](?:r|l)|(d|t)r)'
-    codaGroup = r'(?:(?:b|d|m|n|l|r)s|st)'
+    attackGroup = r'(?:[pcbgf][rl]|[dt]r)|' + consonant + r'h'
+    codaGroup = r'(?:[bdmnlr]s|st)'
     # We will be looking for attack groups starting from the end of a match.
     attackGroupCRE = re.compile(r'(?r)' + attackGroup)
     codaGroupCRE = re.compile(codaGroup)
@@ -45,20 +49,36 @@ class TextFormatter(object):
 
     #TODO what is this?: pass
     def __init__(self, lineLen):
+        """Creates a TextFormatter with a specified line length.
+        lineLen cannot be less than 10.
         """
-        """
+        if lineLen < 10:
+            raise ValueError('lineLen cannot be less than 10')
         self.len = lineLen
         self.currentSpace = lineLen
         self.beginningOfLine = True
     
     @classmethod
     def breakWord(cls, word, at):
+        '''Returns the rightmost position not bigger than parameter
+        at where an hyphen can be inserted. If there's not such a
+        position, it returns 0.
+
+        Example:
+        The word alberto can be broken in 2 ways:
+        al-berto
+        alber-to
+        breakWord('alberto', 5) would return 5
+        breakWord('alberto', 4) would return 2
+        breakWord('alberto', 1) would return 0
+        '''
         for mat in cls.splitPositions.finditer(word):
             # Consonants at the beginning of the word
             # don't separate syllables (case mat.span()[0] == 0)
-            # You cannot leave a vowel alone at the end of a line
-            # (case mat.span()[0] == 1)
-            if mat.span()[0] <= 1:
+            if mat.span()[0] <= 0:
+                continue
+            # Case vowel - h - vowel (cannot break)
+            if mat[1] == 'h':
                 continue
 
             # Default break position means couldn't apply rule
@@ -66,17 +86,27 @@ class TextFormatter(object):
             for rule in cls.rules:
                 applicable = rule.fullmatch(mat[1])
                 if (applicable):
-                    breakPosition = mat.span()[0]+len(applicable[1])
+                    breakPosition = mat.span()[0]+len(applicable[1] or '')
                     break
-            
             if breakPosition == -1:
                 print(f'>> Cannot apply rule to group {mat[0]} in {word}', file=sys.stderr)
-            elif breakPosition <= at:
+            # You cannot leave a vowel alone at the end of a line
+            # (case mat.span()[0] == 1)
+            elif 1 < breakPosition <= at:
                 return breakPosition
         return 0
 
     @classmethod
     def breakToken(cls, token, at):
+        '''Breaks a token -a sequence of non-space characters- in a pair of strings,
+        where the first part hasn't got more characters than at and the split
+        follows spanish rules.
+
+        When no suitable break is available, the function returns None, token.
+
+        For single words, use breakWord. breakToken is used for breaking apart
+        words that may contain punctuation signs.
+        '''
         for wordMatch in cls.wordCRE.finditer(token):
             division = cls.breakWord(wordMatch[0], at-wordMatch.span()[0])
             if division:
@@ -84,10 +114,15 @@ class TextFormatter(object):
                 return token[0:breakAt], token[breakAt:]
         return None, token
 
-    def processToken(self, token):
-        return 0
 
     def processLine(self, line, breakLine=True):
+        '''Processes a line of text, taking into account what is already written in
+        the current line.
+
+        The optinal parameter breakLine tells the class whether there should be a
+        line break after this line or future lines should be processed as if they
+        directly followed this line's last word.
+        '''
         # Split at white space, process each word
         for token in self.tokenCRE.finditer(line):
             if self.currentSpace != self.len:
@@ -104,12 +139,13 @@ class TextFormatter(object):
                         print()
                     print(w2, end='')
                     self.currentSpace = self.len-len(w2)
+                # Or we should end this line and start another one
                 else:
                     print()
                     print(token[0], end='')
                     self.currentSpace = self.len-len(token[0])
-            # The first word goes without preceeding space
             else:
+                # The first word goes without preceeding space
                 print(token[0], end='')
                 self.currentSpace -= len(token[0])
         
@@ -120,13 +156,19 @@ class TextFormatter(object):
 
 
 
-#TODO comment main
 if __name__ == '__main__':
+    # Testing of the module. Receives text file as an argument.
     name = sys.argv[1]
-    file = open(name)
 
-    if name.startswith("words"):
-        txtForm = TextFormatter(0)
+    # Files starting with the prefix 'words' will be treated as files
+    # containing a single word in each line can be used to test the
+    # function breakWord.
+    # Files starting with the prefix 'text' will be treated as files
+    # containing text that should be made to fit a line length. In that
+    # case, the line length is specified as a second parameter.
+    if name.startswith('words'):
+        file = open(name)
+        txtForm = TextFormatter(10)
         for word in file:
             word = word[:-1]
             last = 0
@@ -137,10 +179,12 @@ if __name__ == '__main__':
                     last = at
                     print(word[0:at], '-', word[at:], sep='')
             print()
-    elif name.startswith("text"):
-        lineLen = int(input(), 10)
+    elif name.startswith('text'):
+        file = open(name)
+        lineLen = int(sys.argv[2])
         txtForm = TextFormatter(lineLen)
         for line in file:
             txtForm.processLine(line)
+
 
 

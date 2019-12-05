@@ -48,9 +48,8 @@ def optGroupRE(regExp, name=None):
 	return '(?:' + SPACES + groupRE(regExp, name) + ')?'
 
 
-'''
-Regular expressions.
-'''
+
+# Regular expressions.
 REAL        = r'-?\d+(?:\.\d{1,9})?(?:[eE](?:\+\d+|-0*[1-9]\d*))?'
 RAW_TRIPLET = r'(\d+(?:/\d*)?(?:/\d*)?)'
 TRIPLET     = r'(\d+)(?:/(\d*))?(?:/(\d*))?'
@@ -80,9 +79,7 @@ FACE    = (separatedTokensRE('f',
            + r')*')
 
 
-'''
-Compilation of regular expressions
-'''
+# Compilation of regular expressions
 real = re.compile(REAL)
 vertex = re.compile(VERTEX)
 vector = re.compile(VECTOR)

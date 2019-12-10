@@ -47,7 +47,6 @@ class TextFormatter(object):
     tokenCRE = re.compile(r'\S+')
     wordCRE = re.compile(r'(?r)(?:' + consonant + r'|' + vowel + r')+')
 
-    #TODO what is this?: pass
     def __init__(self, lineLen):
         """Creates a TextFormatter with a specified line length.
         lineLen cannot be less than 10.
@@ -90,11 +89,13 @@ class TextFormatter(object):
                     break
             if breakPosition == -1:
                 print(f'>> Cannot apply rule to group {mat[0]} in {word}', file=sys.stderr)
+                sys.exit(0)
+                # We could throw an exception here
             # You cannot leave a vowel alone at the end of a line
             # (case mat.span()[0] == 1)
             elif 1 < breakPosition <= at:
                 return breakPosition
-        return 0
+        return None
 
     @classmethod
     def breakToken(cls, token, at):

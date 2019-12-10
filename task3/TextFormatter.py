@@ -21,9 +21,8 @@ class SpanishFormatter(object):
     # A coda group is a group of consonants that can end a syllable.
     attackGroup = r'(?:[pPcCbBgGfF][rRlL]|[dDtT][rR])|' + consonant + r'[hH]'
     codaGroup = r'(?:[bBdDmMnNlLrR][sS]|[sS][tT])'
-    # We will be looking for attack groups starting from the end of a match.
-    attackGroupCRE = re.compile(r'(?r)' + attackGroup)
-    codaGroupCRE = re.compile(codaGroup)
+    # Excluded patterns
+    excludeGroupCRE = re.compile(r'h')
     
     # Regular expression for finding a group of consonants between vowels.
     # This will serve to study if we can separate the word with an hyphen
@@ -76,8 +75,7 @@ class SpanishFormatter(object):
             # don't separate syllables (case mat.span()[0] == 0)
             if mat.span()[0] <= 0:
                 continue
-            # Case vowel - h - vowel (cannot break)
-            if mat[1] == 'h':
+            if cls.excludeGroupCRE.fullmatch(mat[1]):
                 continue
 
             # Default break position means couldn't apply rule
@@ -174,7 +172,7 @@ if __name__ == '__main__':
         txtForm = SpanishFormatter(10)
         for word in file:
             word = word[:-1]
-            last = 0
+            last = None
             print(word)
             for i in range(len(word)):
                 at = txtForm.breakWord(word, i)

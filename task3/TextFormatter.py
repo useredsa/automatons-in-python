@@ -144,7 +144,8 @@ class SpanishFormatter(object):
                     print(token[0], end='', file=file)
                     self.currentSpace = self.len-len(token[0])
                 if self.currentSpace < 0:
-                    print(f'[{cls.__name__}] Exceptionally long word led to a bigger line.', file=sys.stderr)
+                    print(f'[{self.__class__.__name__}] Exceptionally long word led to a bigger line.',
+                        file=sys.stderr)
             else:
                 # The first word goes without preceeding space
                 print(token[0], end='', file=file)

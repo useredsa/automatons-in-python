@@ -44,7 +44,7 @@ class Afd(object):
     getEstadoInicial() : str
         Devuelve el nombre del estado inicial
     getAlfabeto() : set
-        Devuelve el alfabeto del autÃ³mata
+        Devuelve el alfabeto del automata
     mostrarAfd()
         Imprime por salida estandar toda la informacion del automata
         
@@ -321,11 +321,11 @@ class Afd(object):
         Muestra por salida estandar toda la informacion del automata
         '''
         
-        print("NÃºmero de estados:", self.nestados)
-        print("NÃºmero de transiciones:", self.ntransiciones)
+        print("Numero de estados:", self.nestados)
+        print("Numero de transiciones:", self.ntransiciones)
         print("El estado inicial es: '%s'" % self.estadoInicial)
         print("Los estados finales son:", list(self.estadosFinales))
-        print("El alfabeto del autÃ³mata es: ", list(self.alfabeto))
+        print("El alfabeto del automata es: ", list(self.alfabeto))
         for i in self.automata:
             print("El estado '%s' tiene estas transiciones:" % self.traductorEstados(i))
             self.mostrarTransiciones(i)

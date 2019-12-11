@@ -2,7 +2,7 @@
 import regex as re
 import sys
 
-class TextFormatter(object):
+class SpanishFormatter(object):
     '''Helps adjust spanish text to line length adding hyphens.
 
     This is the main class of the task. It uses regular expressions
@@ -14,16 +14,15 @@ class TextFormatter(object):
     # a consonant. It is not required that they are a single character.
     # Characters will be recognized as vowels before consonants when
     # there's ambiguity.
-    vowel = r'(?:[aeiouáéíóú]|y$)'
-    consonant = r'(?:ch|ll|rr|[bcdfghjklmnñpqrstvwxyz])'
+    vowel = r'(?:[aAeEiIoOuUáÁéÉíÍóÓúÚ]|[yY]$)'
+    consonant = r'(?:[cC][hH]|[lL][lL]|[rR][rR]|[bBcCdDfFgGhHjJkKlLmMnNñÑpPqQrRsStTvVwWxXyYzZ])'
     
     # An attack group is a group of consonants that can start a syllable.
     # A coda group is a group of consonants that can end a syllable.
-    attackGroup = r'(?:[pcbgf][rl]|[dt]r)|' + consonant + r'h'
-    codaGroup = r'(?:[bdmnlr]s|st)'
-    # We will be looking for attack groups starting from the end of a match.
-    attackGroupCRE = re.compile(r'(?r)' + attackGroup)
-    codaGroupCRE = re.compile(codaGroup)
+    attackGroup = r'(?:[pPcCbBgGfF][rRlL]|[dDtT][rR])|' + consonant + r'[hH]'
+    codaGroup = r'(?:[bBdDmMnNlLrR][sS]|[sS][tT])'
+    # Excluded patterns
+    excludeGroupCRE = re.compile(r'h')
     
     # Regular expression for finding a group of consonants between vowels.
     # This will serve to study if we can separate the word with an hyphen
@@ -47,9 +46,8 @@ class TextFormatter(object):
     tokenCRE = re.compile(r'\S+')
     wordCRE = re.compile(r'(?r)(?:' + consonant + r'|' + vowel + r')+')
 
-    #TODO what is this?: pass
     def __init__(self, lineLen):
-        """Creates a TextFormatter with a specified line length.
+        """Creates a SpanishFormatter with a specified line length.
         lineLen cannot be less than 10.
         """
         if lineLen < 10:
@@ -77,8 +75,7 @@ class TextFormatter(object):
             # don't separate syllables (case mat.span()[0] == 0)
             if mat.span()[0] <= 0:
                 continue
-            # Case vowel - h - vowel (cannot break)
-            if mat[1] == 'h':
+            if cls.excludeGroupCRE.fullmatch(mat[1]):
                 continue
 
             # Default break position means couldn't apply rule
@@ -89,12 +86,14 @@ class TextFormatter(object):
                     breakPosition = mat.span()[0]+len(applicable[1] or '')
                     break
             if breakPosition == -1:
-                print(f'>> Cannot apply rule to group {mat[0]} in {word}', file=sys.stderr)
+                print(f'[{cls.__name__}] Cannot apply rule to group {mat[0]} in {word}', file=sys.stderr)
+                # We could throw an exception here
+                sys.exit(0)
             # You cannot leave a vowel alone at the end of a line
             # (case mat.span()[0] == 1)
             elif 1 < breakPosition <= at:
                 return breakPosition
-        return 0
+        return None
 
     @classmethod
     def breakToken(cls, token, at):
@@ -115,7 +114,7 @@ class TextFormatter(object):
         return None, token
 
 
-    def processLine(self, line, breakLine=True):
+    def processLine(self, line, breakLine=True, file=sys.stdout):
         '''Processes a line of text, taking into account what is already written in
         the current line.
 
@@ -128,29 +127,32 @@ class TextFormatter(object):
             if self.currentSpace != self.len:
                 # The token and a preceeding space may fit
                 if len(token[0])+1 <= self.currentSpace:
-                    print(' ', token[0], sep='', end='')
+                    print(' ', token[0], sep='', end='', file=file)
                     self.currentSpace-=len(token[0])+1
                 # Or, we can insert a space, part of the token and a dash
                 elif self.currentSpace > 3:
                     w1, w2 = self.breakToken(token[0], self.currentSpace-2)
                     if w1:
-                        print(' ', w1, '-', sep='')
+                        print(' ', w1, '-', sep='', file=file)
                     else:
-                        print()
-                    print(w2, end='')
+                        print('', file=file)
+                    print(w2, end='', file=file)
                     self.currentSpace = self.len-len(w2)
                 # Or we should end this line and start another one
                 else:
-                    print()
-                    print(token[0], end='')
+                    print('', file=file)
+                    print(token[0], end='', file=file)
                     self.currentSpace = self.len-len(token[0])
+                if self.currentSpace < 0:
+                    print(f'[{self.__class__.__name__}] Exceptionally long word led to a bigger line.',
+                        file=sys.stderr)
             else:
                 # The first word goes without preceeding space
-                print(token[0], end='')
+                print(token[0], end='', file=file)
                 self.currentSpace -= len(token[0])
         
         if breakLine:
-            print()
+            print('', file=file)
             self.currentSpace = self.len
 
 
@@ -166,12 +168,14 @@ if __name__ == '__main__':
     # Files starting with the prefix 'text' will be treated as files
     # containing text that should be made to fit a line length. In that
     # case, the line length is specified as a second parameter.
-    if name.startswith('words'):
+    import os
+    basename = os.path.basename(name)
+    if basename.startswith('words'):
         file = open(name)
-        txtForm = TextFormatter(10)
+        txtForm = SpanishFormatter(10)
         for word in file:
             word = word[:-1]
-            last = 0
+            last = None
             print(word)
             for i in range(len(word)):
                 at = txtForm.breakWord(word, i)
@@ -179,10 +183,10 @@ if __name__ == '__main__':
                     last = at
                     print(word[0:at], '-', word[at:], sep='')
             print()
-    elif name.startswith('text'):
+    elif basename.startswith('text'):
         file = open(name)
         lineLen = int(sys.argv[2])
-        txtForm = TextFormatter(lineLen)
+        txtForm = SpanishFormatter(lineLen)
         for line in file:
             txtForm.processLine(line)
 

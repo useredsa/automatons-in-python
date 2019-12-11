@@ -14,37 +14,37 @@ class SpanishFormatter(object):
     # a consonant. It is not required that they are a single character.
     # Characters will be recognized as vowels before consonants when
     # there's ambiguity.
-    vowel = r'(?:[aAeEiIoOuüUáÁéÉíÍóÓúÚÜ]|[yY]$)'
-    consonant = r'(?:[cC][hH]|[lL][lL]|[rR][rR]|[bBcCdDfFgGjJkKlLmMnNñÑpPqQrRsStTvVwWxXyYzZ])'
+    vowel = r'(?:[aeiouáéíóúü]|y$)'
+    consonant = r'(?:ch|ll|rr|[bcdfgjklmnñpqrstvwxyz])'
     
     # An attack group is a group of consonants that can start a syllable.
     # A coda group is a group of consonants that can end a syllable.
-    attackGroup = r'(?:[pPcCbBgGfF][rRlL]|[dDtT][rR])|' + consonant + r'[hH]'
-    codaGroup = r'(?:[bBdDmMnNlLrR][sS]|[sS][tT])'
+    attackGroup = r'(?:[pcbgf][rl]|[dt][r])|'# + consonant + r'h'
+    codaGroup = r'(?:[bdmnlr]s|st])'
     # Excluded patterns
-    excludeGroupCRE = re.compile(r'h')
+    excludeGroupCRE = re.compile(r'(?i)h')
     
     # Regular expression for finding a group of consonants between vowels.
     # This will serve to study if we can separate the word with an hyphen
     # here.
-    splitPositions = re.compile(r'(?r)((' + consonant + r')+)' + vowel)
+    splitPositions = re.compile(r'(?ri)((' + consonant + r')+)' + vowel)
 
     
     # Grammatical rules for splitting a group of consonants. They should
     # be considered in this order.
     rules = [
-        re.compile(r'()' + consonant),
-        re.compile(r'()' + attackGroup),
-        re.compile(r'(' + consonant + r')' + consonant),
-        re.compile(r'(' + consonant + r')' + attackGroup),
-        re.compile(r'(' + codaGroup + r')' + consonant),
-        re.compile(r'(' + codaGroup + r')' + attackGroup)
+        re.compile(r'(?i)()' + consonant),
+        re.compile(r'(?i)()' + attackGroup),
+        re.compile(r'(?i)(' + consonant + r')' + consonant),
+        re.compile(r'(?i)(' + consonant + r')' + attackGroup),
+        re.compile(r'(?i)(' + codaGroup + r')' + consonant),
+        re.compile(r'(?i)(' + codaGroup + r')' + attackGroup)
     ]    
     
     # Definition of what is a token (anything separated by spaces)
     # and a word (any string made of vowels and consonants)
     tokenCRE = re.compile(r'\S+')
-    wordCRE = re.compile(r'(?r)(?:' + consonant + r'|' + vowel + r')+')
+    wordCRE = re.compile(r'(?ri)(?:' + consonant + r'|' + vowel + r')+')
 
     def __init__(self, lineLen):
         """Creates a SpanishFormatter with a specified line length.

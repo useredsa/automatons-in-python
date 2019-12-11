@@ -1,213 +1,59 @@
-Coma en
-"La cape-
-ruza" por
-Vicente
-Blasco
-Ibañez:
-"Porque,
-eso sí, el
-monigote,
-alentado
-por la
-servidumbre
-de sus ma-
-yores, era
-un terri-
-ble anar-
-quista, un
-demoledor
-de lo
-existente,
-que reía
-como un
-bandido
-cuando lo-
-graba
-ofender
-con el más
-atroz de
-los insul-
-tos a la
-justicia
-humana".
-Punto y
-coma en
-"Cenizas"
-por Emilia
-Pardo Ba-
-zán: "Así
-se hizo;
-aceptó
-complacidísimo
-el sabio
-médico;
-reinó la
-mayor cor-
-dialidad;
-se comió
-fuerte y
-se bebió
-seco, pese
-a la dieta
-y al régi-
-men y a
-los alifa-
-fes de ca-
-da uno, y
-como el
-doctor
-aseguraba
-no haber
-medicamento
-más proba-
-do para el
-hígado que
-el buen
-humor, sa-
-lieron a
-relucir
-jubilosos
-recuerdos
-de la mo-
-cedad e
-historietas
-picante".
-Paréntesis
-en "El
-universo o
-nada" de
-Elena Po-
-niatowska:
-"En el ca-
-so de Xi-
-rau, el
-nombramiento
-lo libera-
-ría un po-
-co y lo
-obligaría
-a concen-
-trarse en
-ese libro
-de crítica
-modernos
-que nos
-debe. Ade-
-más es
-buen pro-
-fesor. En-
-tre los
-historiadores
-hay uno
-muy dis-
-tinguido
-(aunque
-esté lejos
-de mí in-
-telectualmente):
-Edmundo
-O'Gorman,
-y entre
-los antro-
-pólogos:
-Bernal."
-Dos puntos
-en "Aden-
-tro" por
-Miguel de
-Unamuno:
-"Pon en tu
-orden, muy
-alta tu
-mira, lo
-más alta
-que pue-
-das, más
-alta aún
-donde tu
-vista no
-alcance,
-donde
-nuestras
-vidas pa-
-ralelas
-van a en-
-contrarse:
-apunta a
-lo inase-
-quible.
-Piensa
-cuando es-
-cribas, ya
-que escri-
-bir es tu
-acción, en
-el público
-universal,
-no en el
-español
-tan sólo,
-y menos en
-el español
-de hoy".
-Puntos
-suspensivos
-en "Cuento
-futuro"
-por Leo-
-poldo
-Alas:
--Evelina;
-ya sa-
-bes... que
-siempre he
-sido es-
-clavo vo-
-luntario
-de tus ca-
-prichos...
-pero en
-esta oca-
-sión...
-perdóname
-si no pue-
-do compla-
-certe.
-Primero me
-arrojaré
-de cabeza
-desde este
-globo, que
-descender
-a la tie-
-rra... a
-robarle la
-comida a
-cualquiera
-de mis
-víctimas.
-Asesino
-fui; pero
-no seré
-ladrón".
-Signos de
-interrogación
-en "El mo-
-naguillo"
-de Julia
-de Asensi:
-"¿Estás tú
-alguna vez
-de noche
-en la
-iglesia?-
-le pregun-
-tó. -Pocas
-veces,
-cuando hay
-alguna
-función al
-día si-
-guiente y
-necesitamos
-arreglarla".
+Coma en "La caperuza" por
+Blasco Ibañez: "Porque, eso sí,
+monigote, alentado por la servidumbre
+sus mayores, era un terrible
+un demoledor de lo existente,
+reía como un bandido cuando
+ofender con el más atroz
+los insultos a la justicia
+
+Punto y coma en "Cenizas"
+Emilia Pardo Bazán: "Así se
+aceptó complacidísimo el sabio médico;
+la mayor cordialidad; se comió
+y se bebió seco, pese
+la dieta y al régimen
+a los alifafes de cada
+y como el doctor aseguraba
+haber medicamento más probado para
+hígado que el buen humor,
+a relucir jubilosos recuerdos de
+mocedad e historietas picante".
+Paréntesis en "El universo o
+de Elena Poniatowska: "En el
+de Xirau, el nombramiento lo
+un poco y lo obligaría
+concentrarse en ese libro de
+modernos que nos debe. Además
+buen profesor. Entre los historiadores
+uno muy distinguido (aunque esté
+de mí intelectualmente): Edmundo O'Gorman,
+entre los antropólogos: Bernal."
+Dos puntos en "Adentro" por
+de Unamuno: "Pon en tu
+muy alta tu mira, lo
+alta que puedas, más alta
+donde tu vista no alcance,
+nuestras vidas paralelas van a
+apunta a lo inasequible. Piensa
+escribas, ya que escribir es
+acción, en el público universal,
+en el español tan sólo,
+menos en el español de
+
+Puntos suspensivos en "Cuento futuro"
+Leopoldo Alas: -Evelina; ya sabes...
+siempre he sido esclavo voluntario
+tus caprichos... pero en esta
+perdóname si no puedo complacerte.
+me arrojaré de cabeza desde
+globo, que descender a la
+a robarle la comida a
+de mis víctimas. Asesino fui;
+no seré ladrón".
+Signos de interrogación en "El
+de Julia de Asensi: "¿Estás
+alguna vez de noche en
+iglesia?- le preguntó. -Pocas veces,
+hay alguna función al día
+y necesitamos arreglarla".

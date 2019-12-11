@@ -14,8 +14,8 @@ class SpanishFormatter(object):
     # a consonant. It is not required that they are a single character.
     # Characters will be recognized as vowels before consonants when
     # there's ambiguity.
-    vowel = r'(?:[aAeEiIoOuUáÁéÉíÍóÓúÚ]|[yY]$)'
-    consonant = r'(?:[cC][hH]|[lL][lL]|[rR][rR]|[bBcCdDfFgGhHjJkKlLmMnNñÑpPqQrRsStTvVwWxXyYzZ])'
+    vowel = r'(?:[aAeEiIoOuüUáÁéÉíÍóÓúÚÜ]|[yY]$)'
+    consonant = r'(?:[cC][hH]|[lL][lL]|[rR][rR]|[bBcCdDfFgGjJkKlLmMnNñÑpPqQrRsStTvVwWxXyYzZ])'
     
     # An attack group is a group of consonants that can start a syllable.
     # A coda group is a group of consonants that can end a syllable.
@@ -38,7 +38,7 @@ class SpanishFormatter(object):
         re.compile(r'(' + consonant + r')' + consonant),
         re.compile(r'(' + consonant + r')' + attackGroup),
         re.compile(r'(' + codaGroup + r')' + consonant),
-        re.compile(r'(' + consonant + consonant + r')' + consonant + consonant)
+        re.compile(r'(' + codaGroup + r')' + attackGroup)
     ]    
     
     # Definition of what is a token (anything separated by spaces)
@@ -91,7 +91,7 @@ class SpanishFormatter(object):
                 sys.exit(0)
             # You cannot leave a vowel alone at the end of a line
             # (case mat.span()[0] == 1)
-            elif 1 < breakPosition <= at:
+            elif 0 < breakPosition <= at:
                 return breakPosition
         return None
 
@@ -130,7 +130,7 @@ class SpanishFormatter(object):
                     print(' ', token[0], sep='', end='', file=file)
                     self.currentSpace-=len(token[0])+1
                 # Or, we can insert a space, part of the token and a dash
-                elif self.currentSpace > 3:
+                elif self.currentSpace > 2:
                     w1, w2 = self.breakToken(token[0], self.currentSpace-2)
                     if w1:
                         print(' ', w1, '-', sep='', file=file)

@@ -49,27 +49,26 @@ class Automata:
     #Return a complete automata without inaccessible states 
     #TODO Control de errores por si afd no es de clase Afd
 def myPerfectAFD(afd):  
-    simbolos = afd.getAlfabeto()
-    inicial = afd.getEstadoInicial()
+    simbols = afd.getAlfabeto()
+    initial = afd.getEstadoInicial()
     q_error = 'q_error'
-    lista = [inicial]
-    myafd = Automata(simbolos,set(),dict(),inicial,set())
+    state_list = [initial]
+    myafd = Automata(simbols,set(),dict(),initial,set())
     #Breadth First Search
-    while len(lista) != 0 :
-        elem = lista[0]
+    while state_list:
+        elem = state_list.pop(0)
         if not elem in myafd.getEstados():
             myafd.addEstado(elem)
             if afd.esFinal(elem):
                 myafd.addFinales(elem)
-            for i in simbolos:
-                next_estado = afd.estadoSiguiente(elem,i)
-                if next_estado == None:
+            for i in simbols:
+                next_state = afd.estadoSiguiente(elem,i)
+                if next_state == None:
                     myafd.addEstado(q_error)
                     myafd.addTransicion(elem,i,q_error)
                 else:
-                    myafd.addTransicion(elem,i,next_estado)
-                    lista[len(lista):] = [next_estado]
-        del lista[0]
+                    myafd.addTransicion(elem,i,next_state)
+                    state_list.append(next_state) 
     #Add q_error transitions
     if q_error in myafd.getEstados():
         for i in myafd.getSimbolos():
@@ -78,157 +77,147 @@ def myPerfectAFD(afd):
     return myafd   
 
     #Receives a final table from the Marked Triangular algorithm
-    #Return an array with the equivalent states
+    #Return an array with the equivalent states and the number of equivalent states
 def equivStates(T):
     #Equivalence tree
     equiv = [-1] * len(T)
     #Iterate over the table to find no marked elements
     for j in range(1, len(T), 1):
-        i = 0
-        while i < j:
+        for i in range(j):
             if not T[j][i][0]:
                 equiv[j] = i
-            i += 1
     count = 0        
     #Join equivalent states
-    for n in range(len(equiv)):
-        aux  = n
-        if equiv[n]==-1: count += 1
+    for i in range(len(equiv)):
+        aux  = i
+        if equiv[i]==-1:
+            count += 1
         while equiv[aux] != -1:
             aux = equiv[aux]
-        if n!=aux:
-            equiv[n] = aux    
+        if i!=aux:
+            equiv[i] = aux    
         
     return (equiv,count)
 
+    #Receive a table of equivalence states, the number of them and the list with the old states
+    # (the indexes of the table and the list must correspond to the same state)
+    # Return a pair with:
+    # A dictionary that translates old states to new ones
+    # A list of lists that contains equivalent states 
+def buildTranslatorAndList(equiv, count, states):
+    list_equiv = [[] for x in range(count)] 
+    translator= {}
+    back = 0
+    for i in range(len(equiv)):
+        if equiv[i]!=-1:
+            list_equiv[equiv[i]].append(states[i])
+            translator[states[i]] = list_equiv[equiv[i]]
+            back += 1
+        else: 
+            list_equiv[i-back].append(states[i])  
+            translator[states[i]] = list_equiv[i-back]
+    return (translator, list_equiv)
 
-    #C:\Users\JoséManuel\Documents\GitHub\automatons-in-python\task1\in1.jffs
+    #Receive a table of the triangular table algorithm
+    #and an entry of that table and mark recursively
+    #that entry and the ones that are associated with it
+def recursiveMark(table, entry):
+    to_mark = [entry]
+    while to_mark:
+        o = to_mark.pop(0)
+        table[o[0]][o[1]][0] = True
+        #Iterate over the list of associated pairs of states
+        for k in range(len(table[o[0]][o[1]][1])):
+            par = table[o[0]][o[1]][1][k]
+            if not table[par[0]][par[1]][0]:
+                to_mark.append(tuple([par[0],par[1]]))
+                table[par[0]][par[1]][0] = True                                          
+    return 
+
     #Receives a complete automata with no inaccessible states and
     #Return a pair with:
     # A dictionary that translates old states to new ones
-    # A matrix 
+    # A list of lists that contains equivalent states 
 def markTriangTable(myafd):
-    #Entrada: un AFD M = (Q; V; delta; q0; F) con Q = {q0,...,qn}, V = {a1,...,ap}.
-    #devuelve: un diccionario cuyas claves son los estados originales y sus valores son los estados minimos.
-    #1. M <--- eliminaInaccesibles(M); //modifica M para que no tenga estados inaccesibles.
-    #2. M <--- completaAFD(M); //modifica M para que sea un AFD completo.
-    #3. Construye una tabla T con filas desde q1 (segundo estado) hasta qn (último) y columnas desde
+    #1. Construye una tabla T con filas desde q1 (segundo estado) hasta qn (último) y columnas desde
         #q0 (primer estado) hasta qn-1 (penúltimo);
-    alfabeto = myafd.getSimbolos() 
-    estados = list(myafd.getEstados())
-    n_estados = len(estados)
+    alphabet = myafd.getSimbolos() 
+    states = list(myafd.getEstados())
+    n_states = len(states)
     indices = {}
-    for i in range(n_estados):
-        indices[estados[i]] = i
-    finales = myafd.getFinales()
+    for i in range(n_states):
+        indices[states[i]] = i
+    finals = myafd.getFinales()
 
-    #4. para cada casilla(qj; qi) de T hacer:
-        #5. Asocia una lista(qj; qi) de parejas de estados //inicialmente vacía
-
-    #Tabla de tamaño: n_estados x n_estados x (1+len(lista))
-    T = [[[False,[]] for x in range(n_estados)] for y in range(n_estados)]
+    #2. para cada casilla(qj; qi) de T hacer:
+        #3. Asocia una lista(qj; qi) de parejas de estados //inicialmente vacía
+    table = [[[False,[]] for x in range(n_states)] for y in range(n_states)]
 
     #-----/* Marcado inicial de estados distinguibles */-----
-    #6. para cada casilla(qj; qi) de T hacer:
-        #7. si en la pareja (qj; qi) uno es final y el otro no entonces marcar(casilla(qj; qi));
-    for i in finales:
-        try:    
-            index = estados.index(i)
-            for n in range(n_estados):
-                if n < index:
-                    T[index][n][0] = True
-                elif n > index:
-                    T[n][index][0] = True
-        except ValueError:
-            print('Este automata no tienes estados finales', file= sys.stderr)
-
+    #4. para cada casilla(qj; qi) de T hacer:
+        #5. si en la pareja (qj; qi) uno es final y el otro no entonces marcar(casilla(qj; qi));                
+    for i in range(n_states):
+        for j in range(i):
+            if (states[i] in finals) ^ (states[j] in finals):
+                table[i][j][0] = True
+        
     #-----/* Deducción de estados distinguibles */------
-    #8. para cada casilla(qj; qi) de T hacer: //ej., realizar recorrido por filas de la tabla
-    for j in range(1, n_estados, 1):
-        i = 0
-        while i < j: 
-            #9. si casilla(qj; qi) no marcada entonces
-            if not T[j][i][0]:
-                #10. para cada símbolo a_k del alfabeto hacer:
-                for s in alfabeto:
-                    #11. e1 := delta(qj; a_k); e2 := delta(qi; a_k); // obtiene pareja de estados leyendo a_k
-                    estado1 = myafd.nextEstado(estados[i],s)
-                    estado2 = myafd.nextEstado(estados[j],s) 
-                    e1, e2 = indices[estado1], indices[estado2]
-                    if e1 >= e2:
-                        i1,i2 = e1,e2
-                    else:
-                        i1,i2 = e2,e1
-                    #12. si casilla(e1; e2) está marcada entonces
-                    if T[i1][i2][0]:
-                        #13. marcarRecursivamente (casilla(qj; qi));
-                        a_marcar = [tuple([j,i])]
-                        while len(a_marcar) !=0 :
-                            o = a_marcar[0]
-                            T[o[0]][o[1]][0] = True
-                            #Recorremos la lista de casillas asociadas
-                            for k in range(0, len(T[o[0]][o[1]][1])):
-                                par = T[o[0]][o[1]][1][k]
-                                #Si no esta marcada la marcamos y la metemos a la lista 
-                                if not T[par[0]][par[1]][0]:
-                                    a_marcar.append(tuple([par[0],par[1]]))
-                                    T[par[0]][par[1]][0] = True                    
-                            del a_marcar[0]                   
-                        #14. break; //no prueba con más símbolos, porque (qj; qi) son distinguibles
+    #6. para cada casilla(qj; qi) de T hacer: //ej., realizar recorrido por filas de la tabla
+    for j in range(1, n_states, 1):
+        for i in range(j): 
+            if not table[j][i][0]:
+                for s in alphabet:
+                    #7. e1 := delta(qj; a_k); e2 := delta(qi; a_k); // obtiene pareja de estados leyendo a_k
+                    state1 = myafd.nextEstado(states[i],s)
+                    state2 = myafd.nextEstado(states[j],s) 
+                    e1, e2 = indices[state1], indices[state2]
+                    if e1 <= e2:
+                        e1,e2 = e2,e1
+                    if table[e1][e2][0]:
+                        #8. marcarRecursivamente (casilla(qj; qi));
+                        recursiveMark(table, tuple([j,i]))
+                        #9. break; //no prueba con más símbolos, porque (qj; qi) son distinguibles
                         #// pasa a tratar la siguiente casilla
                         break
-                    #15. si-no si (e1 != e2) y casilla(e1; e2) != casilla(qj; qi) entonces
-                    elif i1!=i2 and (i1!=j or i2!=i):
-                        #16. añade la pareja actual (qj; qi) a la lista de pareja obtenida: lista(e1; e2);
-                        T[i1][i2][1].append(tuple([j,i]))
-            i += 1
-    #17. //fin de marcado de tabla triangular
+                    #10. si-no si (e1 != e2) y casilla(e1; e2) != casilla(qj; qi) entonces
+                    elif e1!=e2 and (e1!=j or e2!=i):
+                        #11. añade la pareja actual (qj; qi) a la lista de pareja obtenida: lista(e1; e2);
+                        table[e1][e2][1].append(tuple([j,i]))
+    #12. //fin de marcado de tabla triangular
     
-    tabla_equivalencias = equivStates(T)
-    lista_equiv = [[] for x in range(tabla_equivalencias[1])] 
-    traductor= {}
-    back = 0
-    for n in range(len(tabla_equivalencias[0])):
-        if tabla_equivalencias[0][n]!=-1:
-            lista_equiv[tabla_equivalencias[0][n]].append(estados[n])
-            traductor[estados[n]] = lista_equiv[tabla_equivalencias[0][n]]
-            back += 1
-        else: 
-            lista_equiv[n-back].append(estados[n])  
-            traductor[estados[n]] = lista_equiv[n-back]
+    equiv_and_count = equivStates(table)
+    return buildTranslatorAndList(equiv_and_count[0], equiv_and_count[1], states)
 
-    return (traductor, lista_equiv)
-
-
-    #TODO Remove
+    #Receive a complete automata without inaccessible states
+    # and write to the console the representation of the minimize automata
 def minimizeAFD(myafd):
-    '''
-    entrada: un autómata finito determinista M = (Q; V; delta; q0; F).
-    devuelve: M_min = (Q_min; V; delta_min; q0_min; F_min) tal que
-    M_min es mínimo y L(M_min) = L(M) (equivalente a M).
-    -----/* Aplica el algoritmo de marcado de tabla triangular al autómataM. Este método
-            previamente elimina estados inaccesibles y completa el autómata M */--------
-    1. T <---- marcarTablaTriangular(M);
+    translator_and_min_states = markTriangTable(myafd) 
+    translator = translator_and_min_states[0]
+    min_states = translator_and_min_states[1]
+    simbols = list(myafd.getSimbolos())
     
-    -----/* Obtiene el conjunto de estados del autómata mínimo */------
-    2. Obtener el conjunto cociente de Q/= a partir de la tabla T y hacer Q_min := Q/=;
-
-    -----/* Obtiene el estado inicial del autómata mínimo: es el estado-clase S que contiene
-            al estado inicial original */----------
-    3. q0_min := S pertenece a Q_min tal que q0 pertenece a S;
-
-    -----/* Obtiene el conjunto de estados finales del autómata mínimo */-----
-    4. F_min := {S pertenece a Q_min | interserc(S, F) != null}; // estado-clase que contienen un final de M
-
-    -----/* Obtiene la función de transición del autómata mínimo */------
-    5. Para todo estado-clase S de Qmin y todo símbolo a de V hacer
-        Se escoge un estado cualquiera q perteneciente a S;
-        Se obtiene la transición:
-        delta_min(S, a) := S' perteneciente a Q_min tal que delta(q; a) pertenece S';
-    6. devuelve (Mmin)
-    '''
-    
-    return# minimos
+    #Show the formatted answer
+    table = [[] for x in min_states] 
+    for x in range(len(min_states)):
+        if myafd.getInicial() in min_states[x]:
+            table[x].append("->"+ repr(min_states[x]))
+        else:
+            token = True
+            for elem in myafd.getFinales():
+                if elem in min_states[x]:
+                    table[x].append("#"+ repr(min_states[x]))
+                    token = False
+                    break 
+            if token: table[x].append(repr(min_states[x]))
+        
+    for y in range(len(simbols)):
+        for x in range(len(min_states)):
+            table[x].append(repr(translator[myafd.nextEstado(min_states[x][0], simbols[y])]))   
+    headers = ["States"]
+    headers[1:] = simbols[0:]
+        
+    print(tabulate(table,headers, tablefmt="psql"))
+    return
        
 if __name__ == '__main__':
     #Request a JFLAP file
@@ -247,38 +236,11 @@ if __name__ == '__main__':
             print('Problemas: ',error,file=sys.stderr)
             sys.exit(0)
     
-    #Minimize the Automaton:
+    #Create a complete automata without inaccessible states 
     myafd = myPerfectAFD(automata)
-    estados_minimos = markTriangTable(myafd)
-    traductor = estados_minimos[0]
-    minimos = estados_minimos[1]
-    simbols = list(myafd.getSimbolos())
-    
-    #Show the formatted answer
-    table = [[] for x in range(len(minimos))] 
-    for x in range(len(minimos)):
-        if myafd.getInicial() in minimos[x]:
-            table[x].append("->"+ repr(minimos[x]))
-        else:
-            token = True
-            for elem in myafd.getFinales():
-                if elem in minimos[x]:
-                    table[x].append("#"+ repr(minimos[x]))
-                    token = False
-                    break 
-            if token: table[x].append(repr(minimos[x]))
-        
-    for y in range(len(simbols)):
-        for x in range(len(minimos)):
-            table[x].append(repr(traductor[myafd.nextEstado(minimos[x][0], simbols[y])]))   
-    headers = ["States"]
-    headers[1:] = simbols[0:]
-        
-    print(tabulate(table,headers, tablefmt="psql"))    
-    #TODO Remove
-    #(6) For the formatted answer
-        #https://pypi.org/project/tabulate/
-    #print(tabulate(table, headers, tablefmt="psql"))
+    #Minimize the Automaton:
+    minimizeAFD(myafd)
+
     
     
     

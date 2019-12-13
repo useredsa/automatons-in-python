@@ -79,23 +79,14 @@ def myPerfectAFD(afd):
     #Receives a final table from the Marked Triangular algorithm
     #Return an array with the equivalent states and the number of equivalent states
 def equivStates(T):
-    #Equivalence tree
-    equiv = [-1] * len(T)
-    #Iterate over the table to find no marked elements
-    for j in range(1, len(T), 1):
-        for i in range(j):
-            if not T[j][i][0]:
-                equiv[j] = i
-    count = 0        
-    #Join equivalent states
-    for i in range(len(equiv)):
-        aux  = i
-        if equiv[i]==-1:
+    equiv = [i for i in range(len(T))]
+    count = 0
+    for i in range(len(T)):
+        if equiv[i] == i:
             count += 1
-        while equiv[aux] != -1:
-            aux = equiv[aux]
-        if i!=aux:
-            equiv[i] = aux    
+        for j in range(i+1,len(T)):
+            if not T[j][i][0]:
+                equiv[j] = equiv[i]
         
     return (equiv,count)
 
@@ -109,7 +100,7 @@ def buildTranslatorAndList(equiv, count, states):
     translator= {}
     back = 0
     for i in range(len(equiv)):
-        if equiv[i]!=-1:
+        if equiv[i] != i:
             list_equiv[equiv[i]].append(states[i])
             translator[states[i]] = list_equiv[equiv[i]]
             back += 1

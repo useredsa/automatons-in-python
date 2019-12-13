@@ -5,7 +5,7 @@ from jflap.Transiciones import Transiciones
 from tabulate import tabulate
 #We have used the following modules: tabulate
  
-    #Class Automata... 
+ 
 class Automata:
     def __init__(self, simbolos, estados, transiciones, iniciales, finales):
         #Conjunto que contiene el alfabeto del automata
@@ -32,7 +32,7 @@ class Automata:
     def getFinales(self):
         return self.finales
     def addTransicion(self,estado,simbolo,next_estado):
-        clave = str(estado)+str(simbolo) 
+        clave = str(estado)+str(simbolo)
         self.transiciones[clave] = next_estado
         return
     def addFinales(self,estado):
@@ -46,11 +46,13 @@ class Automata:
         return self.transiciones[clave]
 
     #Receives any automata
-    #Return a complete automata without inaccessible states 
-    #TODO Control de errores por si afd no es de clase Afd
+    #Return a complete automata without inaccessible states
 def myPerfectAFD(afd):  
     simbols = afd.getAlfabeto()
     initial = afd.getEstadoInicial()
+    if not initial:
+        print("ERROR: This automata doesn't have initial state",file=sys.stderr)
+        sys.exit(-1)
     q_error = 'q_error'
     state_list = [initial]
     myafd = Automata(simbols,set(),dict(),initial,set())
@@ -73,7 +75,9 @@ def myPerfectAFD(afd):
     if q_error in myafd.getEstados():
         for i in myafd.getSimbolos():
             myafd.addTransicion(q_error,i,q_error)
-            
+    
+    if not myafd.getFinales():
+        print("WARNING: This automata doesn't have final states",file=sys.stderr)         
     return myafd   
 
     #Receives a final table from the Marked Triangular algorithm
@@ -190,16 +194,15 @@ def minimizeAFD(myafd):
     #Show the formatted answer
     table = [[] for x in min_states] 
     for x in range(len(min_states)):
+        element = ""
         if myafd.getInicial() in min_states[x]:
-            table[x].append("->"+ repr(min_states[x]))
-        else:
-            token = True
-            for elem in myafd.getFinales():
-                if elem in min_states[x]:
-                    table[x].append("#"+ repr(min_states[x]))
-                    token = False
-                    break 
-            if token: table[x].append(repr(min_states[x]))
+            element += "->"
+        for elem in myafd.getFinales():
+            if elem in min_states[x]:
+                element += "#"
+                break 
+        element += repr(min_states[x])    
+        table[x].append(element)
         
     for y in range(len(simbols)):
         for x in range(len(min_states)):
@@ -221,10 +224,10 @@ if __name__ == '__main__':
             automata = Afd(ruta)
             name = True
         except FileNotFoundError:
-            print('El fichero no existe ',file=sys.stderr)
+            print('The file doesn\'t exist',file=sys.stderr)
             ruta = input('Enter an input file:')
         except Exception as error:
-            print('Problemas: ',error,file=sys.stderr)
+            print('Problems: ',error,file=sys.stderr)
             sys.exit(0)
     
     #Create a complete automata without inaccessible states 
